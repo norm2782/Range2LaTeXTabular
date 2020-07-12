@@ -31,6 +31,11 @@ function mkRow(widths, row) {
             .join(" & ") + " \\\\<br />"
 }
 
+function escape(str) {
+  return str.replace("$", "\\$")
+            .replace("%", "\\%")
+}
+
 export async function run() {
   try {
     await Excel.run(async context => {
@@ -39,11 +44,11 @@ export async function run() {
        */
       const range = context.workbook.getSelectedRange();
 
-      range.load("values");
+      range.load("text");
 
       context.sync()
         .then(function () {
-          let originalRange = range.values;
+          let originalRange = range.text.map(row => row.map(escape));
           let widths        = transpose(originalRange).map(widestWidth);
           let latexTabular  = "\\begin{tabular}{}<br />"
                             + originalRange.map(row => mkRow(widths, row)).join("")
