@@ -34,6 +34,7 @@ function mkRow(widths, row) {
 function escape(str) {
   return str.replace("$", "\\$")
             .replace("%", "\\%")
+            .replace("&", "\\&")
 }
 
 export async function run() {
@@ -48,11 +49,14 @@ export async function run() {
 
       context.sync()
         .then(function () {
-          let originalRange = range.text.map(row => row.map(escape));
-          let widths        = transpose(originalRange).map(widestWidth);
-          let latexTabular  = "\\begin{tabular}{}<br />"
-                            + originalRange.map(row => mkRow(widths, row)).join("")
-                            + "\\end{tabular}";
+          let originalRange   = range.text.map(row => row.map(escape));
+          let transposedRange = transpose(originalRange)
+          let widths          = transposedRange.map(widestWidth);
+          let latexTabular    = "\\begin{tabular}{"
+                              + transposedRange.map(x => "l").join(" ")
+                              + "}<br />"
+                              + originalRange.map(row => mkRow(widths, row)).join("")
+                              + "\\end{tabular}";
 
           document.getElementById("latex-target").innerHTML = latexTabular;
         });
